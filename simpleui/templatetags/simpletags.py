@@ -1,6 +1,8 @@
 import jieba
 from django import template
 from django.utils.html import format_html
+from django.conf import settings
+import os
 
 register = template.Library()
 
@@ -462,3 +464,31 @@ def get_icon(name):
 @register.filter
 def test(obj):
     print(obj)
+
+
+@register.simple_tag(takes_context=True)
+def home_page(context):
+    '''
+    处理首页，通过设置判断打开的是默认页还是自定义的页面
+    :return:
+    '''
+    home = __get_config('SIMPLEUI_HOME_PAGE')
+    if home:
+        context['home'] = home
+
+    title = __get_config('SIMPLEUI_HOME_TITLE')
+    if not title:
+        title = '首页'
+
+    icon = __get_config('SIMPLEUI_HOME_ICON')
+    if not icon:
+        icon = 'layui-icon-console'
+
+    context['title'] = format_html('<i class="layui-icon {}"></i>{}', icon, title)
+
+    return ''
+
+
+def __get_config(name):
+    value = os.environ.get(name, getattr(settings, name, None))
+    return value
